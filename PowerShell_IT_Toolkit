@@ -1,0 +1,282 @@
+<#
+============================================================
+ Script Name : PowerShell_IT_Toolkit.ps1
+ Author      : Yonathan Toledano
+
+ Description :
+ A menu-driven PowerShell IT Toolkit designed for daily
+ operational checks by IT administrators and network engineers.
+
+ The toolkit provides read-only diagnostic and monitoring tools
+ such as DNS resolution checks, network connectivity tests,
+ disk space monitoring, and system information reporting.
+
+ Supported Systems (Tested & Intended Use) :
+ - Windows Server 2012 R2
+ - Windows Server 2016
+ - Windows Server 2019
+ - Windows Server 2022
+ - Windows 10
+ - Windows 11
+
+ Supported Roles :
+ - Domain Controllers
+ - DNS Servers
+ - File Servers
+ - Application Servers
+ - Management / Admin Workstations
+
+ Requirements :
+ - PowerShell 5.0 or higher (Built-in on supported systems)
+ - Network connectivity for network-related checks
+
+ Safety Notice :
+ - This toolkit performs READ-ONLY operations only
+ - No system configuration or data is modified
+ - Safe to run in production environments
+
+ How to Run :
+ 1. Open PowerShell as Administrator
+ 2. (Optional) Allow script execution for current session:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+ 3. Navigate to the script directory:
+    cd C:\Scripts
+ 4. Run the script:
+    .\PowerShell_IT_Toolkit.ps1
+
+============================================================
+#>
+
+<#
+============================================================
+ Script Name : PowerShell_IT_Toolkit.ps1
+ Author      : Yonathan Toledano
+
+ Description :
+ This script is a PowerShell-based IT Toolkit that provides
+ multiple daily-use tools for IT administrators and
+ network/system engineers.
+
+ The toolkit is menu-driven and allows the user to select
+ specific actions without modifying the script logic.
+
+ Supported Environments :
+ - Windows Server 2012 R2 and later
+ - Windows 10 / 11
+ - Domain-joined machines (recommended)
+
+ Requirements :
+ - PowerShell 5.0 or higher
+ - Network connectivity (for network-related tools)
+
+ IMPORTANT :
+ - This toolkit is READ-ONLY by default
+ - No system changes are performed unless explicitly stated
+ - Safe to run in production environments
+
+ How to Run :
+ 1. Open PowerShell as Administrator
+ 2. (Optional) Temporarily allow script execution:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+ 3. Navigate to script location:
+    cd C:\Scripts
+ 4. Run the toolkit:
+    .\PowerShell_IT_Toolkit.ps1
+
+============================================================
+#>
+
+# ================================
+# GLOBAL VARIABLES
+# ================================
+
+# Path for reports (CSV / TXT)
+$ReportFolder = ".\Reports"
+
+# Create report folder if it does not exist
+if (-not (Test-Path $ReportFolder)) {
+    New-Item -ItemType Directory -Path $ReportFolder | Out-Null
+}
+
+# ================================
+# FUNCTION: SHOW MAIN MENU
+# ================================
+function Show-MainMenu {
+    Clear-Host
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "        PowerShell IT Toolkit            " -ForegroundColor Cyan
+    Write-Host "========================================"
+    Write-Host "1. DNS Health Check"
+    Write-Host "2. Network Connectivity Test"
+    Write-Host "3. Disk Space Check (Local Machine)"
+    Write-Host "4. System Information"
+    Write-Host "5. Exit"
+    Write-Host ""
+}
+
+# ================================
+# FUNCTION 1: DNS HEALTH CHECK
+# ================================
+function DNS-HealthCheck {
+    <#
+    Purpose :
+    Checks DNS resolution for critical hostnames.
+    Helps detect missing or failing DNS records.
+
+    Action Type :
+    Read-only (Safe)
+
+    Output :
+    - Console status
+    - CSV report
+    #>
+
+    $DnsRecords = @(
+        "dc01.domain.local",
+        "fileserver.domain.local",
+        "mail.domain.local",
+        "www.google.com"
+    )
+
+    $Results = @()
+
+    Write-Host ""
+    Write-Host "Starting DNS Health Check..." -ForegroundColor Cyan
+
+    foreach ($Record in $DnsRecords) {
+        try {
+            $Resolve = Resolve-DnsName -Name $Record -ErrorAction Stop
+
+            $Results += [PSCustomObject]@{
+                Hostname = $Record
+                Status   = "OK"
+                IP       = ($Resolve.IPAddress -join ", ")
+            }
+
+            Write-Host "[OK]     $Record" -ForegroundColor Green
+        }
+        catch {
+            $Results += [PSCustomObject]@{
+                Hostname = $Record
+                Status   = "FAILED"
+                IP       = "N/A"
+            }
+
+            Write-Host "[FAILED] $Record" -ForegroundColor Red
+        }
+    }
+
+    $Results | Export-Csv "$ReportFolder\DNS_Health_Check.csv" -NoTypeInformation
+    Write-Host "Report saved to Reports folder" -ForegroundColor Yellow
+    Pause
+}
+
+# ================================
+# FUNCTION 2: NETWORK CONNECTIVITY TEST
+# ================================
+function Network-Test {
+    <#
+    Purpose :
+    Tests basic network connectivity using Ping.
+
+    Action Type :
+    Read-only
+
+    Output :
+    Console only
+    #>
+
+    $Targets = @("8.8.8.8", "1.1.1.1")
+
+    Write-Host ""
+    Write-Host "Network Connectivity Test" -ForegroundColor Cyan
+
+    foreach ($Target in $Targets) {
+        if (Test-Connection -ComputerName $Target -Count 2 -Quiet) {
+            Write-Host "[OK]     $Target reachable" -ForegroundColor Green
+        }
+        else {
+            Write-Host "[FAILED] $Target unreachable" -ForegroundColor Red
+        }
+    }
+
+    Pause
+}
+
+# ================================
+# FUNCTION 3: DISK SPACE CHECK
+# ================================
+function Disk-SpaceCheck {
+    <#
+    Purpose :
+    Displays disk usage for local machine.
+    Useful for quick troubleshooting.
+
+    Action Type :
+    Read-only
+    #>
+
+    Write-Host ""
+    Write-Host "Disk Space Status" -ForegroundColor Cyan
+
+    Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" |
+    Select-Object DeviceID,
+        @{Name="Free(GB)";Expression={[math]::Round($_.FreeSpace/1GB,2)}},
+        @{Name="Total(GB)";Expression={[math]::Round($_.Size/1GB,2)}} |
+    Format-Table -AutoSize
+
+    Pause
+}
+
+# ================================
+# FUNCTION 4: SYSTEM INFORMATION
+# ================================
+function System-Info {
+    <#
+    Purpose :
+    Displays basic system information.
+    Useful for support and documentation.
+
+    Action Type :
+    Read-only
+    #>
+
+    Write-Host ""
+    Write-Host "System Information" -ForegroundColor Cyan
+
+    Get-ComputerInfo |
+    Select-Object OSName, OSVersion, CsSystemType, CsTotalPhysicalMemory |
+    Format-List
+
+    Pause
+}
+
+# ================================
+# MAIN LOOP
+# ================================
+do {
+    Show-MainMenu
+    $Choice = Read-Host "Select an option (1-5)"
+
+    switch ($Choice) {
+        "1" { DNS-HealthCheck }
+        "2" { Network-Test }
+        "3" { Disk-SpaceCheck }
+        "4" { System-Info }
+        "5" {
+            Write-Host "Exiting Toolkit..." -ForegroundColor Cyan
+            Start-Sleep 1
+        }
+        default {
+            Write-Host "Invalid selection. Try again." -ForegroundColor Red
+            Start-Sleep 1
+        }
+    }
+}
+while ($Choice -ne "5")
+
+# ================================
+# END OF SCRIPT
+# ================================
+
+
