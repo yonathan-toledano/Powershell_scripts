@@ -1,0 +1,39 @@
+@echo off
+title Active Directory User Creation Wizard
+echo ======================================
+echo     Active Directory User Wizard
+echo ======================================
+echo.
+
+set /p FIRSTNAME=Enter first name: 
+set /p LASTNAME=Enter last name: 
+set /p USERNAME=Enter username (e.g. john.d): 
+set /p PASSWORD=Enter user password: 
+set /p PHONE=Enter phone number: 
+
+echo.
+echo Creating user in OU: ***OU name****
+echo.
+
+powershell -NoProfile -ExecutionPolicy Bypass -NoExit -Command ^
+    "$first='%FIRSTNAME%'; $last='%LASTNAME%'; $user='%USERNAME%'; $pass='%PASSWORD%'; $phone='%PHONE%';" ^
+    "try {" ^
+    "  $ouDN = 'OU=***OU name**** Users,DC=***domain**,DC=***on***';" ^
+    "  $ou = New-Object DirectoryServices.DirectoryEntry('LDAP://'+$ouDN);" ^
+    "  if (-not $ou.distinguishedName) {Write-Host 'ERROR: OU ***OU name**** not found'; Read-Host 'Press Enter to exit'; exit}" ^
+    "  $userCN='CN='+$first+' '+$last;" ^
+    "  $newUser = $ou.Children.Add($userCN,'user');" ^
+    "  $newUser.Properties['sAMAccountName'].Value = $user;" ^
+    "  $newUser.Properties['userPrincipalName'].Value = $user+'@***domain.on***';" ^
+    "  $newUser.Properties['givenName'].Value = $first;" ^
+    "  $newUser.Properties['sn'].Value = $last;" ^
+    "  $newUser.Properties['displayName'].Value = $first+' '+$last;" ^
+    "  $newUser.Properties['telephoneNumber'].Value = $phone;" ^
+    "  $newUser.Properties['description'].Value = $first+' '+$last;" ^
+    "  $newUser.CommitChanges();" ^
+    "  $newUser.Invoke('SetPassword',$pass);" ^
+    "  $newUser.Properties['userAccountControl'].Value = 512;" ^
+    "  $newUser.CommitChanges();" ^
+    "  Write-Host ''; Write-Host '? SUCCESS: User created successfully';" ^
+    "} catch {Write-Host ''; Write-Host '? ERROR:' $_.Exception.Message;} " ^
+    "finally {Read-Host 'Press Enter to exit'}"
