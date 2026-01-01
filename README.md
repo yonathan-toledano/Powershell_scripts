@@ -1,129 +1,171 @@
-##Powershell_scripts##
+Powershell_scripts
 
-This repository contains basic PowerShell and Batch scripts that provide useful network and system administration tools.
-The purpose of this repository is to offer simple tools for daily IT and sysadmin use.
+This repository contains a collection of PowerShell (and some Batch-assisted) scripts designed to assist IT administrators, system engineers, and network administrators with daily operational tasks.
 
-🚀 This project also represents my first hands-on experience with PowerShell.
+The scripts focus on monitoring, diagnostics, automation, and reporting, with an emphasis on clarity, safety, and real-world usability.
 
-Active Directory User Creation Wizard
+🚀 This project also represents my first hands-on experience with PowerShell, built while learning and applying best practices.
 
-An interactive Batch + PowerShell wizard for creating new users in Active Directory via the command line.
+🎯 Purpose of This Repository
 
-The script prompts the administrator for user details and automatically creates the user in a predefined Organizational Unit (OU).
+Provide practical PowerShell tools for daily IT operations
 
-✨ Features
+Automate common administrative checks
 
-Interactive user creation wizard
+Offer clear, well-documented scripts suitable for learning and real use
 
-Collects user information:
+Serve as a growing personal IT toolkit
 
-First Name
+All scripts are written to be easy to understand, modify, and extend.
 
-Last Name
+📂 Script Categories
+🧑‍💼 Active Directory
 
-Username
+Scripts related to user and directory management, such as:
 
-Password
+User creation wizards
 
-Phone Number
+Account checks
 
-Automatically sets:
+Reporting and validation
 
-sAMAccountName
+🌐 Networking & DNS
 
-UserPrincipalName
+Scripts for network diagnostics and name resolution, such as:
 
-Display Name
+DNS Health Checks
 
-Telephone number
+Connectivity tests
 
-Description
+Resolution validation for critical servers
 
-Enables the user account (userAccountControl = 512)
+💻 System & Server Monitoring
 
-Error handling and success messages
+Scripts for inspecting system health and status, including:
 
-📋 Requirements
+Disk space checks
 
-Windows environment with:
+System information reports
 
-Active Directory Domain Services
+Uptime and basic diagnostics
 
-Permissions to create users in the target OU
+📊 IT Toolkits
 
-PowerShell installed
+Menu-driven scripts that combine multiple tools into a single interface, for example:
 
-Run as Administrator (recommended)
+PowerShell IT Toolkit
 
-🚀 Usage
+Daily operational checks
+
+Read-only diagnostic utilities
+
+🛠 Supported Systems
+
+The scripts in this repository are intended for and tested on:
+
+Windows Server
+
+2012 R2
+
+2016
+
+2019
+
+2022
+
+Windows Client
+
+Windows 10
+
+Windows 11
+
+Supported Roles
+
+Domain Controllers
+
+DNS Servers
+
+File Servers
+
+Application Servers
+
+IT / Admin Workstations
+
+⚙️ Requirements
+
+PowerShell 5.0 or higher
+
+Network connectivity (for network-related scripts)
+
+Appropriate permissions depending on the script
+
+📌 Most scripts do not require Domain Admin privileges unless explicitly stated.
+
+🔐 Safety & Best Practices
+
+Scripts are designed to be read-only by default
+
+No configuration changes are performed unless clearly documented
+
+Uses Microsoft-supported and non-deprecated cmdlets
+
+No external modules required (unless explicitly mentioned)
+
+Safe to run in production environments when used as intended.
+
+🚀 How to Use
 
 Clone the repository:
 
 git clone https://github.com/yonathan-toledano/Powershell_scripts.git
 
 
-Run the script:
+Open PowerShell as Administrator
 
-ActiveDirectoryUserWizard.bat
+(Optional) Allow script execution for the current session:
 
-
-Enter the requested information:
-
-First name
-
-Last name
-
-Username
-
-Password
-
-Phone number
-
-The script will create the user and display a success or error message.
-
-🧩 Configuration
-
-Before using the script, update the following values to match your environment:
-
-$ouDN = 'OU=OU name* Users,DC=domain,DC=on'
-$userPrincipalName = $user + '@domain.on'
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 
-🔧 Replace:
+Navigate to the script folder and run the desired script:
 
-OU name* Users with your actual OU name
+.\ScriptName.ps1
 
-domain.on with your real domain
 
-⚠️ Security Notes
+📄 Each script includes detailed comments explaining:
 
-Passwords are entered and processed in plain text
+What the script does
 
-Not recommended for production environments without improvements
+What each section is responsible for
 
-Suggested enhancements:
+How and when it should be executed
 
-Use Read-Host -AsSecureString
+📌 Project Philosophy
 
-Convert to a full PowerShell script
+Clear comments over clever code
 
-Add password policies and validation
+Safety before automation
 
-📌 Future Improvements
+Practical tools over theoretical examples
 
- Check if user already exists
+Continuous improvement and learning
 
- OU selection menu
+📈 Future Plans
 
- Group assignment
+Expand the IT Toolkit with additional modules
 
- Force password change at first logon
+Add security and audit-focused scripts
 
- Logging to file
+Improve reporting and automation features
 
- Secure password handling
+Refactor selected scripts into reusable modules
 
 👤 Author
 
 Yonathan Toledano
 GitHub: https://github.com/yonathan-toledano
+
+📝 Notes
+
+This repository is actively evolving as part of my learning journey in PowerShell and IT automation.
+Feedback, suggestions, and improvements are always welcome.
