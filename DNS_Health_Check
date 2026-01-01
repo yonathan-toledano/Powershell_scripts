@@ -1,0 +1,137 @@
+<#
+============================================================
+ Script Name : DNS_Health_Check.ps1
+ Author      : Yonathan Toledano
+
+ Supported Environments :
+ - Windows Server 2012 R2 and later
+ - Domain Controllers with DNS role installed
+ - Member servers joined to an Active Directory domain
+ - Windows client machines (Windows 10 / 11) with DNS access
+
+ Requirements :
+ - PowerShell 4.0 or higher
+ - Network access to DNS servers
+ - Resolve-DnsName cmdlet available
+
+ Not Intended For :
+ - Non-Windows systems
+ - Servers without DNS connectivity
+ - Environments using only legacy nslookup-based DNS tools
+
+ Description :
+ Performs a DNS Health Check by resolving critical DNS records.
+ Detects missing or failing DNS entries and exports a report.
+
+============================================================
+#>
+
+<#
+============================================================
+ Script Name : DNS_Health_Check.ps1
+ Author      : Yonathan Toledano
+ Description :
+ Performs a DNS Health Check by resolving critical DNS records.
+ Detects missing or failing DNS entries and exports a report.
+
+ How to Run :
+ 1. Open PowerShell as Administrator
+ 2. (Optional) Allow script execution:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+ 3. Navigate to the script folder:
+    cd C:\Scripts
+ 4. Run the script:
+    .\DNS_Health_Check.ps1
+
+ Output :
+ - Console status (OK / FAILED)
+ - CSV report file
+
+============================================================
+#>
+
+# ================================
+# CONFIGURATION SECTION
+# ================================
+
+# List of critical DNS records to check
+# Modify this list to match your environment
+$DnsRecords = @(
+    "dc01.domain.local",
+    "dc02.domain.local",
+    "fileserver.domain.local",
+    "mail.domain.local",
+    "www.google.com"
+)
+
+# Optional: Specify a DNS server to query
+# Leave empty ("") to use default DNS server
+$DnsServer = ""
+
+# Output report file path
+$ReportPath = ".\DNS_Health_Check_Report.csv"
+
+
+# ================================
+# SCRIPT START
+# ================================
+
+Write-Host ""
+Write-Host "Starting DNS Health Check..." -ForegroundColor Cyan
+Write-Host "====================================="
+
+# Array to store results
+$Results = @()
+
+foreach ($Record in $DnsRecords) {
+
+    try {
+        # Resolve DNS record
+        if ([string]::IsNullOrEmpty($DnsServer)) {
+            $Resolve = Resolve-DnsName -Name $Record -ErrorAction Stop
+        }
+        else {
+            $Resolve = Resolve-DnsName -Name $Record -Server $DnsServer -ErrorAction Stop
+        }
+
+        # Add successful result
+        $Results += [PSCustomObject]@{
+            Hostname = $Record
+            Status   = "OK"
+            IP       = ($Resolve.IPAddress -join ", ")
+        }
+
+        Write-Host "[OK]     $Record" -ForegroundColor Green
+    }
+    catch {
+        # Add failed result
+        $Results += [PSCustomObject]@{
+            Hostname = $Record
+            Status   = "FAILED"
+            IP       = "N/A"
+        }
+
+        Write-Host "[FAILED] $Record" -ForegroundColor Red
+    }
+}
+
+Write-Host "====================================="
+Write-Host "DNS Health Check completed." -ForegroundColor Cyan
+
+
+# ================================
+# EXPORT RESULTS
+# ================================
+
+# Export results to CSV file
+$Results | Export-Csv -Path $ReportPath -NoTypeInformation -Encoding UTF8
+
+Write-Host ""
+Write-Host "Report exported to:" -ForegroundColor Yellow
+Write-Host $ReportPath -ForegroundColor White
+Write-Host ""
+
+# ================================
+# END OF SCRIPT
+# ================================
+
